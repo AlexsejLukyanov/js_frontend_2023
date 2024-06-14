@@ -1,13 +1,11 @@
 import React from 'react';
+import { connect } from 'react-redux';
+import { todoDelete, todoUpdateState } from './actions';
 
 
 class ToDotask extends React.Component {
 	constructor(props) {
 		super(props);
-		
-		this.state = {
-			done: this.props.task.done
-		}
 		
 		this.onStatusClick = this.onStatusClick.bind(this);
 		this.onDeleteClick = this.onDeleteClick.bind(this);
@@ -19,7 +17,7 @@ class ToDotask extends React.Component {
 		fetch(`tasks/${this.props.task._id}`,{
 			method: 'PATCH',
 			body: JSON.stringify({
-				done: !this.state.done
+				done: !this.props.task.done
 			}),
 			headers: {
 				'Content-Type':'application/json'
@@ -27,9 +25,7 @@ class ToDotask extends React.Component {
 		}).then((res) => {
 			if (res.status === 200) {
 				console.log('Updated');
-				this.setState({
-					done: !this.state.done
-				});
+				this.props.dispatch(todoUpdateState(this.props.task._id));
 			}
 			else {
 				console.log('Not Updated');
@@ -45,7 +41,7 @@ class ToDotask extends React.Component {
 			}).then((res) => {
 			if (res.status === 200) {
 				console.log('Deleted');
-				this.props.onTaskDelete(this.props.task._id)
+				this.props.dispatch(todoDelete(this.props.task._id));
 			}
 			else {
 				console.log('Not deleted');
@@ -55,14 +51,29 @@ class ToDotask extends React.Component {
 	
 	render() {
 		return (
-			<li>
-				<span>{this.props.task.name} </span>
-				<span><i>{this.props.task.description}</i> </span>
-				<span onClick={this.onStatusClick}><b>{this.state.done ? 'Done' : 'Todo'}</b> </span>
-				<button onClick={this.onDeleteClick}>Delete</button>
+			<li className="list-group-item">
+				{this.props.task.done ? <div className="todo-indicator bg-success"></div> : <div className="todo-indicator bg-focus"></div>}
+				<div className="widget-content p-0">
+				    <div className="widget-content-wrapper">
+						<div className="widget-content-left">
+						    <div className="widget-heading">{this.props.task.name}</div>
+						    <div className="widget-subheading">
+								<div>{this.props.task.description}</div>
+						  </div>
+						</div>
+						<div className="widget-content-right">
+						   <button className="border-0 btn-transition btn btn-outline-success" onClick={this.onStatusClick}>
+								<i className="fa fa-check"></i>
+						   </button>
+						   <button className="border-0 btn-transition btn btn-outline-danger" onClick={this.onDeleteClick}>
+								<i className="fa fa-trash"></i>
+						   </button>
+						</div>
+				    </div>
+				</div>
 			</li>
 		)
 	}
 }
 
-export default ToDotask;
+export default connect()(ToDotask);
